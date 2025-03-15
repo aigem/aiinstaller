@@ -1,7 +1,28 @@
 import axios from 'axios';
 import { CommandResult, SystemCheckResult } from '../types';
 
-const API_BASE_URL = 'http://localhost:3001';
+// Determine the correct API URL based on the environment
+const getApiBaseUrl = () => {
+  // When using Vite's dev server, use the local dev server URL
+  if (import.meta.env.DEV) {
+    // Check if we're running in a cloud environment with port forwarding
+    const currentHost = window.location.hostname;
+    
+    // If we're not on localhost, we need to use the same hostname but different port
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      // Use the same hostname but port 3001 for API calls
+      return `${window.location.protocol}//${currentHost.replace('-5173', '-3001')}`;
+    }
+    
+    // Default local development URL
+    return 'http://localhost:3001';
+  }
+  
+  // In production, API is likely on the same host
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Execute a command on the backend
 export const executeCommand = async (command: string): Promise<CommandResult> => {
@@ -67,6 +88,23 @@ export const getSystemInfo = async (): Promise<SystemCheckResult> => {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+// Delete a template
+export const deleteTemplate = async (name: string): Promise<{ success: boolean, message: string }> => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/api/templates/${name}`);
+    return {
+      success: true,
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
 };

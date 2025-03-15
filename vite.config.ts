@@ -7,4 +7,10 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    // Enable connections from all network interfaces
+    host: '0.0.0.0',
+    // Configure CORS to allow requests from any origin
+    cors: true
+  },
 });
