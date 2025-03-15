@@ -1,0 +1,32 @@
+[
+    {
+      "name": "1系统信息",
+      "icon": "💻",
+      "command": "uname -a"
+    },
+    {
+      "name": "磁盘空间",
+      "icon": "💾",
+      "command": "df -h"
+    },
+    {
+      "name": "进程列表",
+      "icon": "🔍",
+      "command": "ps aux | head -10"
+    },
+    {
+      "name": "Node版本",
+      "icon": "📦",
+      "command": "node -v"
+    },
+    {
+      "name": "NPM版本",
+      "icon": "🔧",
+      "command": "npm -v"
+    },
+    {
+      "name": "文件列表",
+      "icon": "📂",
+      "command": "ls -la"
+    }
+  ]

@@ -1,0 +1,77 @@
+name: ComfyUI基础安装
+description: 安装ComfyUI的基础版本
+steps:
+- name: 基础设置
+  description: 设置工作目录和配置国内镜像
+  enabled: true
+  commands:
+  - cmd: cd /workspace
+    name: 切换工作目录
+    description: 切换到工作目录
+    required: true
+  - cmd: mkdir -p ~/.pip
+    name: 创建pip配置目录
+    description: 创建pip配置目录
+    required: true
+  - cmd: |
+      cat > ~/.pip/pip.conf << EOF
+      [global]
+      index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+      trusted-host = pypi.tuna.tsinghua.edu.cn
+      EOF
+    name: 配置pip国内镜像
+    description: 配置pip使用清华大学镜像
+    required: true
+- name: 安装uv包管理器
+  description: 安装并配置uv包管理器使用国内镜像
+  enabled: false
+  commands:
+  - cmd: pip install -i https://pypi.tuna.tsinghua.edu.cn/simple uv
+    name: 安装uv
+    description: 从清华镜像安装uv包管理器
+    required: true
+- name: 克隆ComfyUI
+  description: 从GitHub克隆ComfyUI仓库
+  enabled: true
+  commands:
+  - cmd: cd /workspace && git clone https://github.com/comfyanonymous/ComfyUI.git
+    name: 克隆ComfyUI
+    description: 从GitHub克隆ComfyUI仓库
+    required: true
+  - cmd: cd /workspace/ComfyUI
+    name: 进入ComfyUI目录
+    description: 切换到ComfyUI目录
+    required: true
+- name: 配置uv镜像
+  description: 为uv配置国内镜像
+  enabled: true
+  commands:
+  - cmd: |
+      cat > pyproject.toml << EOF
+      [tool.uv]
+      index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+      trusted-host = ["pypi.tuna.tsinghua.edu.cn"]
+      EOF
+    name: 创建pyproject.toml
+    description: 创建uv配置文件使用清华镜像
+    required: true
+- name: 安装依赖
+  description: 使用uv安装ComfyUI所需的依赖
+  enabled: true
+  commands:
+  - cmd: uv pip install -r requirements.txt
+    name: 安装requirements
+    description: 安装ComfyUI基本依赖
+    required: true
+  - cmd: uv pip install torchvision
+    name: 安装torchvision
+    description: 安装额外的torchvision依赖
+    required: true
+- name: 完成安装
+  description: 完成ComfyUI的安装过程
+  enabled: true
+  commands:
+  - cmd: echo "ComfyUI安装已完成，可以使用快捷按钮启动服务"
+    name: 安装完成
+    description: 显示安装完成消息
+    required: true

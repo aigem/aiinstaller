@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CommandResult, SystemCheckResult } from '../types';
+import { CommandResult, SystemCheckResult, ShortcutButton } from '../types';
 
 // Determine the correct API URL based on the environment
 const getApiBaseUrl = () => {
@@ -102,6 +102,42 @@ export const deleteTemplate = async (name: string): Promise<{ success: boolean, 
     };
   } catch (error) {
     console.error('Error deleting template:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+// Get shortcuts from the backend
+export const getShortcuts = async (): Promise<{ success: boolean, shortcuts: ShortcutButton[], message: string }> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/shortcuts`);
+    return {
+      success: true,
+      shortcuts: response.data.shortcuts || [],
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error('Error fetching shortcuts:', error);
+    return {
+      success: false,
+      shortcuts: [],
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
+};
+
+// Save shortcuts to the backend
+export const saveShortcuts = async (shortcuts: ShortcutButton[]): Promise<{ success: boolean, message: string }> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/shortcuts`, { shortcuts });
+    return {
+      success: true,
+      message: response.data.message
+    };
+  } catch (error) {
+    console.error('Error saving shortcuts:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error occurred'

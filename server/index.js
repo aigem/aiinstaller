@@ -27,6 +27,28 @@ if (!fs.existsSync(templatesDir)) {
   fs.mkdirSync(templatesDir, { recursive: true });
 }
 
+// Create configs directory for storing configuration files
+const configsDir = path.join(__dirname, '../configs');
+if (!fs.existsSync(configsDir)) {
+  fs.mkdirSync(configsDir, { recursive: true });
+}
+
+// Default shortcuts configuration file path
+const shortcutsConfigPath = path.join(configsDir, 'shortcuts.json');
+
+// Initialize shortcuts file if it doesn't exist
+if (!fs.existsSync(shortcutsConfigPath)) {
+  const defaultShortcuts = [
+    { name: '系统信息', icon: '💻', command: 'uname -a' },
+    { name: '磁盘空间', icon: '💾', command: 'df -h' },
+    { name: '进程列表', icon: '🔍', command: 'ps aux | head -10' },
+    { name: 'Node版本', icon: '📦', command: 'node -v' },
+    { name: 'NPM版本', icon: '🔧', command: 'npm -v' },
+    { name: '文件列表', icon: '📂', command: 'ls -la' },
+  ];
+  fs.writeFileSync(shortcutsConfigPath, JSON.stringify(defaultShortcuts, null, 2), 'utf8');
+}
+
 // API endpoint to execute a command
 app.post('/api/execute', (req, res) => {
   const { command } = req.body;
@@ -277,6 +299,94 @@ app.delete('/api/templates/:name', (req, res) => {
   } catch (error) {
     console.error(`Error deleting template: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// API endpoint to get shortcuts
+app.get('/api/shortcuts', (req, res) => {
+  try {
+    // 确保配置目录存在
+    if (!fs.existsSync(configsDir)) {
+      fs.mkdirSync(configsDir, { recursive: true });
+    }
+    
+    // 检查快捷操作配置文件是否存在
+    if (!fs.existsSync(shortcutsConfigPath)) {
+      const defaultShortcuts = [
+        { name: '系统信息', icon: '💻', command: 'uname -a' },
+        { name: '磁盘空间', icon: '💾', command: 'df -h' },
+        { name: '进程列表', icon: '🔍', command: 'ps aux | head -10' },
+        { name: 'Node版本', icon: '📦', command: 'node -v' },
+        { name: 'NPM版本', icon: '🔧', command: 'npm -v' },
+        { name: '文件列表', icon: '📂', command: 'ls -la' },
+      ];
+      fs.writeFileSync(shortcutsConfigPath, JSON.stringify(defaultShortcuts, null, 2), 'utf8');
+      
+      return res.json({
+        success: true, 
+        shortcuts: defaultShortcuts,
+        message: 'Default shortcuts loaded'
+      });
+    }
+    
+    // 读取快捷操作配置
+    const shortcutsContent = fs.readFileSync(shortcutsConfigPath, 'utf8');
+    const shortcuts = JSON.parse(shortcutsContent);
+    
+    return res.json({
+      success: true,
+      shortcuts,
+      message: 'Shortcuts loaded successfully'
+    });
+  } catch (error) {
+    console.error(`Error loading shortcuts: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// API endpoint to save shortcuts
+app.post('/api/shortcuts', (req, res) => {
+  try {
+    const { shortcuts } = req.body;
+    
+    if (!shortcuts || !Array.isArray(shortcuts)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid shortcuts data. Expected an array.'
+      });
+    }
+    
+    // 验证每个快捷操作的格式
+    for (const shortcut of shortcuts) {
+      if (!shortcut.name || !shortcut.icon || !shortcut.command) {
+        return res.status(400).json({
+          success: false,
+          error: '快捷操作格式无效。每个快捷操作必须包含name、icon和command属性。'
+        });
+      }
+    }
+    
+    // 确保配置目录存在
+    if (!fs.existsSync(configsDir)) {
+      fs.mkdirSync(configsDir, { recursive: true });
+    }
+    
+    // 保存快捷操作配置
+    fs.writeFileSync(shortcutsConfigPath, JSON.stringify(shortcuts, null, 2), 'utf8');
+    
+    return res.json({
+      success: true,
+      message: '快捷操作保存成功'
+    });
+  } catch (error) {
+    console.error(`Error saving shortcuts: ${error.message}`);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 

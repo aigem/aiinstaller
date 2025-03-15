@@ -7,7 +7,7 @@ import ConfigOptions from './components/ConfigOptions';
 import TemplateEditor from './components/TemplateEditor';
 import TemplateInstaller from './components/TemplateInstaller';
 import ShortcutButtons from './components/ShortcutButtons';
-import { getSystemInfo, getTemplates } from './api/backendApi';
+import { getSystemInfo, getTemplates, getShortcuts } from './api/backendApi';
 import yaml from 'js-yaml';
 
 function App() {
@@ -102,14 +102,7 @@ function App() {
     timeout: 60,
   });
 
-  const [shortcutButtons, setShortcutButtons] = useState<ShortcutButton[]>([
-    { name: '系统信息', icon: '💻', command: 'uname -a' },
-    { name: '磁盘空间', icon: '💾', command: 'df -h' },
-    { name: '进程列表', icon: '🔍', command: 'ps aux | head -10' },
-    { name: 'Node版本', icon: '📦', command: 'node -v' },
-    { name: 'NPM版本', icon: '🔧', command: 'npm -v' },
-    { name: '文件列表', icon: '📂', command: 'ls -la' },
-  ]);
+  const [shortcutButtons, setShortcutButtons] = useState<ShortcutButton[]>([]);
 
   const [activeTemplate, setActiveTemplate] = useState<Template | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -154,6 +147,12 @@ function App() {
         // 加载所有可用模板
         const templates = await getTemplates();
         setSavedTemplates(templates);
+        
+        // 加载快捷操作
+        const shortcutsResult = await getShortcuts();
+        if (shortcutsResult.success && shortcutsResult.shortcuts.length > 0) {
+          setShortcutButtons(shortcutsResult.shortcuts);
+        }
       } catch (error) {
         console.error('连接到服务器失败:', error);
         setConnectionStatus('error');
